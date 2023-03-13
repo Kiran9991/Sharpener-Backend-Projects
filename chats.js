@@ -5,28 +5,29 @@ const routers = express.Router();
 const fs = require('fs');
 
 routers.get('/',(req, res) => {
-    fs.readFile('message.txt', 'utf8', (err, data) => {
+    fs.readFile('message.txt', (err, data) => {
         if(err) {
-            console.log('the data is not reading');
+            console.log(err);
+            data = `The chat doesn't exists`;
         }
-        console.log('the data is = '+data);
-        res.send(`<form action="/" method="POST"><p>${data}<br><input type="text" name="userChats"><br><br><button type="submit">Send</button></form>`);
-        res.redirect('/saved');
+        console.log('the message is saved');
+        res.send(`<form action="/" method="POST" onSubmit="document.getElementById('username').value = localStorage.getItem('username')">
+                        <p>${data}</p>
+                        <input type="text" name="message" id="message">
+                        <input type="hidden" name="username" id="username"><br><br>
+                        <button type="submit">Send</button>
+                 </form>`);
+        res.end();
     })
 })
 
-routers.use('/', (req, res) => {
-    const data = req.body.username+' = '+req.body.userChats;
-    data.toString();
-    fs.writeFile('message.txt', data, (err) => {
-        if(err) {
-            console.log('there was an error on writing a file');
-        }
+routers.post('/', (req, res) => {
+    console.log(req.body.username);
+    console.log(req.body.message);
+    fs.writeFile('message.txt', `${req.body.username}: ${req.body.message}; `,{flag: 'a'}, (err) => {
+        err ? console.log(err) : res.redirect('/')
     })
 })
 
-routers.use('/saved', (req, res) => {
-    res.send('<h1>the data is saved</h1>')
-})
 
 module.exports = routers;
